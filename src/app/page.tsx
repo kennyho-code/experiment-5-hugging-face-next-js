@@ -1,42 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 export default function Home() {
   const [result, setResult] = useState(null);
   const [ready, setReady] = useState(null);
-  const worker = useRef(null);
 
-  useEffect(() => {
-    if (!worker.current) {
-      worker.current = new Worker(new URL("worker.ts", import.meta.url));
-    }
+  const classify = async (text) => {
+    if (!text) return;
+    if (ready === null) setReady(false);
 
-    const onMessageReceived = (e) => {
-      switch (e.data.status) {
-        case "initiate":
-          setReady(false);
-          break;
-        case "ready":
-          setReady(true);
-          break;
-        case "complete":
-          setResult(e.data.output[0]);
-          break;
-      }
-    };
+    // Make a request to the /classify route on the server.
+    const result = await fetch(`/classify?text=${encodeURIComponent(text)}`);
 
-    worker.current.addEventListener("message", onMessageReceived);
+    // If this is the first time we've made a request, set the ready flag.
+    if (!ready) setReady(true);
 
-    return () =>
-      worker.current.removeEventListener("message", onMessageReceived);
-  });
-
-  const classify = useCallback((text) => {
-    if (worker.current) {
-      worker.current.postMessage({ text });
-    }
-  }, []);
+    const json = await result.json();
+    setResult(json);
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-12">
