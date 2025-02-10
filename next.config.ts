@@ -4,15 +4,11 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  /* config options here */
-  webpack: (config) => {
-    // See https://webpack.js.org/configuration/resolve/#resolvealias
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      sharp$: false,
-      "onnxruntime-node$": false,
-    };
-    return config;
+  output: "standalone", // Feel free to modify/remove this option
+
+  // Indicate that these packages should not be bundled by webpack
+  experimental: {
+    serverComponentsExternalPackages: ["sharp", "onnxruntime-node"],
   },
 };
 
